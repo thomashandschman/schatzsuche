@@ -796,25 +796,31 @@ function updateGameUI() {
 }
 
 // ===== SATELLITE MAP STYLE =====
+// Use Google satellite tiles — they have consistent high-zoom coverage globally.
+// maxzoom on the source is set to 20 (Google's reliable max for most areas).
+// The map maxZoom is 21, so MapLibre will overzoom (upscale) zoom-20 tiles
+// at zoom 21 — slightly blurry but usable for a 20x20m play area.
 const SATELLITE_STYLE = {
   version: 8,
   name: 'Satellite',
   sources: {
-    'esri-satellite': {
+    'satellite': {
       type: 'raster',
       tiles: [
-        'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
+        'https://mt0.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',
+        'https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',
+        'https://mt2.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',
+        'https://mt3.google.com/vt/lyrs=s&x={x}&y={y}&z={z}'
       ],
       tileSize: 256,
-      maxzoom: 22,
-      attribution: 'Esri, Maxar, Earthstar Geographics'
+      maxzoom: 20
     }
   },
   layers: [
     {
       id: 'satellite-tiles',
       type: 'raster',
-      source: 'esri-satellite',
+      source: 'satellite',
       minzoom: 0,
       maxzoom: 22
     }
