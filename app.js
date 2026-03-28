@@ -566,17 +566,26 @@ function renderGame() {
           </div>
         </div>
 
-        <!-- Radar at bottom -->
+        <!-- Compass at bottom -->
         <div style="flex: 1;"></div>
 
         ${nearest ? `
-          <div class="radar-container">
-            <div class="radar-ring ${heatLevel}" id="radar-ring">
-              <span class="radar-center">${heatLevel === 'very-hot' ? theme.emoji : getDirectionEmoji(nearest.bearing)}</span>
+          <div class="compass-container" id="compass-container">
+            <div class="compass-outer ${heatLevel}" id="compass-outer">
+              <div class="compass-arrow-wrap" id="compass-arrow" style="transform: rotate(${nearest.bearing}deg);">
+                <svg viewBox="0 0 100 100" class="compass-arrow-svg">
+                  <polygon points="50,8 62,55 50,48 38,55" fill="var(--treasure-color)" stroke="rgba(0,0,0,0.3)" stroke-width="1.5"/>
+                  <polygon points="50,92 62,55 50,62 38,55" fill="var(--text-secondary)" opacity="0.4" stroke="rgba(0,0,0,0.2)" stroke-width="1"/>
+                  <circle cx="50" cy="55" r="6" fill="var(--bg-card)" stroke="var(--treasure-color)" stroke-width="2"/>
+                </svg>
+              </div>
+              ${heatLevel === 'very-hot' ? `<div class="compass-treasure-icon">${theme.emoji}</div>` : ''}
             </div>
-            <div class="radar-distance">${formatDistance(dist)}</div>
-            <div class="radar-hint" style="color: var(--${heatLevel === 'cold' ? 'cold' : heatLevel === 'warm' ? 'warm' : heatLevel === 'hot' ? 'hot' : 'treasure'}-color);">
-              ${theme['hint_' + heatLevel.replace('-', '_')]}
+            <div class="compass-info">
+              <div class="compass-distance" id="compass-distance">${formatDistance(dist)}</div>
+              <div class="compass-hint" id="compass-hint" style="color: var(--${heatLevel === 'cold' ? 'cold' : heatLevel === 'warm' ? 'warm' : heatLevel === 'hot' ? 'hot' : 'treasure'}-color);">
+                ${theme['hint_' + heatLevel.replace('-', '_')]}
+              </div>
             </div>
           </div>
           ${dist < 5 ? `
@@ -744,34 +753,33 @@ function updateGameUI() {
     lastBeepTime = now;
   }
 
-  // Update radar without full re-render
-  const radarRing = document.getElementById('radar-ring');
-  if (radarRing) {
-    radarRing.className = 'radar-ring ' + heatLevel;
+  // Smoothly update compass arrow rotation
+  const arrowEl = document.getElementById('compass-arrow');
+  if (arrowEl && nearest) {
+    arrowEl.style.transform = `rotate(${nearest.bearing}deg)`;
   }
 
-  // Update hint text and collect button without full re-render
+  // Update compass outer ring heat class
+  const compassOuter = document.getElementById('compass-outer');
+  if (compassOuter) {
+    compassOuter.className = 'compass-outer ' + heatLevel;
+  }
+
+  // Update distance display
+  const distEl = document.getElementById('compass-distance');
+  if (distEl && nearest) distEl.textContent = formatDistance(nearest.distance);
+
+  // Update hint text and collect button when heat level changes
   if (heatLevel !== lastHeatLevel) {
     lastHeatLevel = heatLevel;
     const theme = THEME_TREASURES[state.theme];
     
-    // Update hint text
-    const hintEl = document.querySelector('.radar-hint');
+    const hintEl = document.getElementById('compass-hint');
     if (hintEl) {
       hintEl.textContent = theme['hint_' + heatLevel.replace('-', '_')];
       const colorVar = heatLevel === 'cold' ? 'cold' : heatLevel === 'warm' ? 'warm' : heatLevel === 'hot' ? 'hot' : 'treasure';
       hintEl.style.color = `var(--${colorVar}-color)`;
     }
-    
-    // Update radar center emoji
-    const centerEl = document.querySelector('.radar-center');
-    if (centerEl) {
-      centerEl.textContent = heatLevel === 'very-hot' ? theme.emoji : getDirectionEmoji(nearest.bearing);
-    }
-    
-    // Update distance
-    const distEl = document.querySelector('.radar-distance');
-    if (distEl) distEl.textContent = formatDistance(nearest.distance);
     
     // Handle collect button
     let collectWrap = document.querySelector('.collect-btn-wrap');
@@ -783,15 +791,6 @@ function updateGameUI() {
     } else if (nearest.distance >= 5 && collectWrap) {
       collectWrap.remove();
     }
-  } else {
-    // Just update direction and distance
-    const centerEl = document.querySelector('.radar-center');
-    if (centerEl && nearest) {
-      const theme = THEME_TREASURES[state.theme];
-      centerEl.textContent = heatLevel === 'very-hot' ? theme.emoji : getDirectionEmoji(nearest.bearing);
-    }
-    const distEl = document.querySelector('.radar-distance');
-    if (distEl && nearest) distEl.textContent = formatDistance(nearest.distance);
   }
 }
 
@@ -964,16 +963,9 @@ function initGameMap() {
     container: 'game-map',
     style: SATELLITE_STYLE,
     center: [centerLng, centerLat],
-    zoom: 20,
+    zoom: 21,
     maxZoom: 22,
     attributionControl: false,
-  });
-
-  // Fit to the actual play area bounds with padding
-  state.gameMap.fitBounds(mapBounds, {
-    padding: { top: 80, bottom: 200, left: 30, right: 30 },
-    maxZoom: 22,
-    animate: false
   });
 
   state.gameMap.on('load', () => {
