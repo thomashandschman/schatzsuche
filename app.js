@@ -795,6 +795,32 @@ function updateGameUI() {
   }
 }
 
+// ===== SATELLITE MAP STYLE =====
+const SATELLITE_STYLE = {
+  version: 8,
+  name: 'Satellite',
+  sources: {
+    'esri-satellite': {
+      type: 'raster',
+      tiles: [
+        'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
+      ],
+      tileSize: 256,
+      maxzoom: 22,
+      attribution: 'Esri, Maxar, Earthstar Geographics'
+    }
+  },
+  layers: [
+    {
+      id: 'satellite-tiles',
+      type: 'raster',
+      source: 'esri-satellite',
+      minzoom: 0,
+      maxzoom: 22
+    }
+  ]
+};
+
 // ===== MAP INITIALIZATION =====
 function initEditorMap() {
   const container = document.getElementById('editor-map');
@@ -806,9 +832,10 @@ function initEditorMap() {
 
   state.editorMap = new maplibregl.Map({
     container: 'editor-map',
-    style: 'https://tiles.openfreemap.org/styles/liberty',
+    style: SATELLITE_STYLE,
     center: center,
-    zoom: 18,
+    zoom: 20,
+    maxZoom: 22,
     attributionControl: false,
   });
 
@@ -822,13 +849,13 @@ function initEditorMap() {
       id: 'area-fill',
       type: 'fill',
       source: 'area-polygon',
-      paint: { 'fill-color': '#e94560', 'fill-opacity': 0.2 }
+      paint: { 'fill-color': '#ffff00', 'fill-opacity': 0.15 }
     });
     state.editorMap.addLayer({
       id: 'area-outline',
       type: 'line',
       source: 'area-polygon',
-      paint: { 'line-color': '#e94560', 'line-width': 3 }
+      paint: { 'line-color': '#ffff00', 'line-width': 3 }
     });
 
     // Draw existing corners
@@ -887,7 +914,6 @@ function addEditorMarker(corner, index) {
   if (!state.editorMap) return;
   const el = document.createElement('div');
   el.className = 'corner-marker';
-  el.style.background = 'var(--accent, #e94560)';
 
   const marker = new maplibregl.Marker({ element: el, draggable: true })
     .setLngLat([corner[1], corner[0]])
@@ -925,9 +951,10 @@ function initGameMap() {
 
   state.gameMap = new maplibregl.Map({
     container: 'game-map',
-    style: 'https://tiles.openfreemap.org/styles/liberty',
+    style: SATELLITE_STYLE,
     center: [centerLng, centerLat],
-    zoom: 18,
+    zoom: 20,
+    maxZoom: 22,
     attributionControl: false,
   });
 
@@ -943,13 +970,13 @@ function initGameMap() {
       id: 'game-area-fill',
       type: 'fill',
       source: 'game-area',
-      paint: { 'fill-color': '#4ecdc4', 'fill-opacity': 0.15 }
+      paint: { 'fill-color': '#ffff00', 'fill-opacity': 0.12 }
     });
     state.gameMap.addLayer({
       id: 'game-area-outline',
       type: 'line',
       source: 'game-area',
-      paint: { 'line-color': '#4ecdc4', 'line-width': 2, 'line-dasharray': [3, 2] }
+      paint: { 'line-color': '#ffff00', 'line-width': 3, 'line-dasharray': [3, 2] }
     });
 
     // Show found treasures

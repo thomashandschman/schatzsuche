@@ -1097,12 +1097,12 @@ body {
 
 /* ===== AREA EDITOR MAP MARKERS ===== */
 .corner-marker {
-  width: 24px;
-  height: 24px;
-  background: var(--accent, #e94560);
+  width: 28px;
+  height: 28px;
+  background: #ffff00;
   border: 3px solid white;
   border-radius: 50%;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.5), 0 0 8px rgba(255,255,0,0.6);
   cursor: grab;
 }
 
