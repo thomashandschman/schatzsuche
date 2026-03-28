@@ -796,10 +796,9 @@ function updateGameUI() {
 }
 
 // ===== SATELLITE MAP STYLE =====
-// Use Google satellite tiles — they have consistent high-zoom coverage globally.
-// maxzoom on the source is set to 20 (Google's reliable max for most areas).
-// The map maxZoom is 21, so MapLibre will overzoom (upscale) zoom-20 tiles
-// at zoom 21 — slightly blurry but usable for a 20x20m play area.
+// Google satellite tiles with 4 parallel servers for fast loading.
+// Source maxzoom 21 — Google serves tiles up to ~21 in populated areas (Europe).
+// Map maxZoom 22 allows MapLibre to overzoom if needed.
 const SATELLITE_STYLE = {
   version: 8,
   name: 'Satellite',
@@ -813,7 +812,7 @@ const SATELLITE_STYLE = {
         'https://mt3.google.com/vt/lyrs=s&x={x}&y={y}&z={z}'
       ],
       tileSize: 256,
-      maxzoom: 20
+      maxzoom: 21
     }
   },
   layers: [
@@ -822,7 +821,7 @@ const SATELLITE_STYLE = {
       type: 'raster',
       source: 'satellite',
       minzoom: 0,
-      maxzoom: 22
+      maxzoom: 23
     }
   ]
 };
@@ -840,7 +839,7 @@ function initEditorMap() {
     container: 'editor-map',
     style: SATELLITE_STYLE,
     center: center,
-    zoom: 20,
+    zoom: 21,
     maxZoom: 22,
     attributionControl: false,
   });
@@ -955,6 +954,12 @@ function initGameMap() {
   const centerLat = (bounds.minLat + bounds.maxLat) / 2;
   const centerLng = (bounds.minLng + bounds.maxLng) / 2;
 
+  // Calculate the LngLatBounds for fitBounds
+  const mapBounds = new maplibregl.LngLatBounds(
+    [bounds.minLng, bounds.minLat],
+    [bounds.maxLng, bounds.maxLat]
+  );
+
   state.gameMap = new maplibregl.Map({
     container: 'game-map',
     style: SATELLITE_STYLE,
@@ -962,6 +967,13 @@ function initGameMap() {
     zoom: 20,
     maxZoom: 22,
     attributionControl: false,
+  });
+
+  // Fit to the actual play area bounds with padding
+  state.gameMap.fitBounds(mapBounds, {
+    padding: { top: 80, bottom: 200, left: 30, right: 30 },
+    maxZoom: 22,
+    animate: false
   });
 
   state.gameMap.on('load', () => {
