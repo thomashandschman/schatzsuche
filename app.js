@@ -554,20 +554,16 @@ function renderGame() {
       <!-- Map -->
       <div id="game-map" style="width: 100%; height: 100%;"></div>
 
-      <!-- HUD -->
-      <div class="game-hud">
-        <div class="hud-top">
-          <div class="hud-player-info" style="border-left: 4px solid ${color};">
-            <span class="hud-player-name">${player.name}</span>
-          </div>
-          <div class="hud-timer" id="game-timer">${formatTime(state.elapsed)}</div>
-          <div class="hud-treasures">
-            ${theme.emoji} ${foundCount}/${total}
-          </div>
+      <!-- HUD - only top and bottom bars, middle is transparent for map interaction -->
+      <div class="game-hud-top">
+        <div class="hud-player-info" style="border-left: 4px solid ${color};">
+          <span class="hud-player-name">${player.name}</span>
         </div>
-
-        <!-- Compass at bottom -->
-        <div style="flex: 1;"></div>
+        <div class="hud-timer" id="game-timer">${formatTime(state.elapsed)}</div>
+        <div class="hud-treasures">
+          ${theme.emoji} ${foundCount}/${total}
+        </div>
+      </div>
 
         ${nearest ? `
           <div class="compass-container" id="compass-container">
@@ -594,7 +590,6 @@ function renderGame() {
             </div>
           ` : ''}
         ` : ''}
-      </div>
 
       <!-- Pause/Quit Button -->
       <button class="btn btn-icon btn-ghost back-btn" onclick="quitGame()" style="background: var(--bg-card); box-shadow: var(--shadow-md);">
@@ -787,7 +782,8 @@ function updateGameUI() {
       collectWrap = document.createElement('div');
       collectWrap.className = 'collect-btn-wrap';
       collectWrap.innerHTML = `<button class="collect-btn" onclick="collectTreasure(${nearest.index})">${theme.collect}</button>`;
-      document.querySelector('.game-hud').appendChild(collectWrap);
+      const screenEl = document.querySelector('.screen.active');
+      if (screenEl) screenEl.appendChild(collectWrap);
     } else if (nearest.distance >= 5 && collectWrap) {
       collectWrap.remove();
     }
@@ -962,8 +958,8 @@ function initGameMap() {
   state.gameMap = new maplibregl.Map({
     container: 'game-map',
     style: SATELLITE_STYLE,
-    center: [centerLng, centerLat],
-    zoom: 21,
+    bounds: mapBounds,
+    fitBoundsOptions: { padding: { top: 70, bottom: 220, left: 20, right: 20 } },
     maxZoom: 22,
     attributionControl: false,
   });

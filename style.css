@@ -618,25 +618,22 @@ body {
 }
 
 /* ===== GAME HUD ===== */
-.game-hud {
+.game-hud-top {
   position: absolute;
-  inset: 0;
-  pointer-events: none;
+  top: 0;
+  left: 0;
+  right: 0;
   z-index: 20;
-  display: flex;
-  flex-direction: column;
-}
-
-.game-hud > * {
-  pointer-events: auto;
-}
-
-.hud-top {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
   padding: var(--space-3);
   padding-top: calc(env(safe-area-inset-top, 0px) + var(--space-3));
+  pointer-events: none;
+}
+
+.game-hud-top > * {
+  pointer-events: auto;
 }
 
 .hud-player-info {
@@ -682,7 +679,7 @@ body {
 /* ===== COMPASS ===== */
 .compass-container {
   position: absolute;
-  bottom: calc(env(safe-area-inset-bottom, 0px) + var(--space-6));
+  bottom: calc(env(safe-area-inset-bottom, 0px) + var(--space-4));
   left: 50%;
   transform: translateX(-50%);
   z-index: 20;
@@ -690,7 +687,7 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--space-3);
+  gap: var(--space-2);
 }
 
 .compass-outer {
